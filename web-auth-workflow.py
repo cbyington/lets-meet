@@ -12,31 +12,20 @@ import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 
-# This variable specifies the name of a file that contains the OAuth 2.0
-# information for this application, including its client_id and client_secret.
 CLIENT_SECRETS_FILE = "client_secret_718959481266-rgcep92fv592m6k5fcd1dedu3101f5mm.apps.googleusercontent.com.json"
 
-# This OAuth 2.0 access scope allows for full read/write access to the
-# authenticated user's account and requires requests to use an SSL connection.
-#SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-#API_SERVICE_NAME = 'drive'
 API_SERVICE_NAME = 'calendar'
 API_VERSION = 'v3'
 
 app = flask.Flask(__name__)
-# Note: A secret key is included in the sample so that it works.
-# If you use this code in your application, replace this with a truly secret
-# key. See http://flask.pocoo.org/docs/0.12/quickstart/#sessions.
+
 app.secret_key = 'REPLACE ME - this value is here as a placeholder.'
-
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
-
 
 @app.route('/')
 def index():
   return print_index_table()
-
 
 @app.route('/test')
 def test_api_request():
@@ -50,20 +39,16 @@ def test_api_request():
   drive = googleapiclient.discovery.build(
       API_SERVICE_NAME, API_VERSION, credentials=credentials)
 
-  #files = drive.files().list().execute()
   now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
   events_result = drive.events().list(calendarId='primary', timeMin=now,
                                         maxResults=20,singleEvents=True,
                                         orderBy='startTime').execute()
   events = events_result.get('items', [])
 
-  # Save credentials back to session in case access token was refreshed.
   # ACTION ITEM: In a production app, you likely want to save these
   #              credentials in a persistent database instead.
   flask.session['credentials'] = credentials_to_dict(credentials)
 
-  #return flask.jsonify(**files)
-  #return events[0]
   return flask.jsonify(**events_result)
 
 
@@ -79,7 +64,7 @@ def authorize():
       # Enable offline access so that you can refresh an access token without
       # re-prompting the user for permission. Recommended for web server apps.
       access_type='offline',
-      # Enable incremental authorization. Recommended as a best practice.
+      # Enable incremental authorization.
       include_granted_scopes='true')
 
   # Store the state so the callback can verify the auth server response.
@@ -110,27 +95,6 @@ def oauth2callback():
 
   return flask.redirect(flask.url_for('test_api_request'))
 
-
-#@app.route('/revoke')
-#def revoke():
-#  if 'credentials' not in flask.session:
-#    return ('You need to <a href="/authorize">authorize</a> before ' +
-#            'testing the code to revoke credentials.')
-
-#  credentials = google.oauth2.credentials.Credentials(
-#    **flask.session['credentials'])
-
-#  revoke = requests.post('https://accounts.google.com/o/oauth2/revoke',
-#      params={'token': credentials.token},
-#      headers = {'content-type': 'application/x-www-form-urlencoded'})
-
-#  status_code = getattr(revoke, 'status_code')
-#  if status_code == 200:
-#    return('Credentials successfully revoked.' + print_index_table())
-#  else:
-#    return('An error occurred.' + print_index_table())
-
-
 @app.route('/clear')
 def clear_credentials():
   if 'credentials' in flask.session:
@@ -157,11 +121,6 @@ def print_index_table():
           '<td>Go directly to the authorization flow. If there are stored ' +
           '    credentials, you still might not be prompted to reauthorize ' +
           '    the application.</td></tr>' +
-       #   '<tr><td><a href="/revoke">Revoke current credentials</a></td>' +
-       #   '<td>Revoke the access token associated with the current user ' +
-       #   '    session. After revoking credentials, if you go to the test ' +
-       #   '    page, you should see an <code>invalid_grant</code> error.' +
-       #   '</td></tr>' +
           '<tr><td><a href="/clear">Clear Flask session credentials</a></td>' +
           '<td>Clear the access token currently stored in the user session. ' +
           '    After clearing the token, if you <a href="/test">test the ' +
@@ -175,6 +134,4 @@ if __name__ == '__main__':
   #     When running in production *do not* leave this option enabled.
   os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-  # Specify a hostname and port that are set as a valid redirect URI
-  # for your API project in the Google API Console.
   app.run('localhost', 8080, debug=True)
