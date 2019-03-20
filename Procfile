@@ -1,1 +1,1 @@
-web: python web-auth-workflow.py
+web: python3 web-auth-workflow.py
