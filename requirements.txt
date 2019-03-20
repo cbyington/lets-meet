@@ -1,3 +1,2 @@
-python==python-2.7.16
 flask==1.0.2
 requests==2.20.0
