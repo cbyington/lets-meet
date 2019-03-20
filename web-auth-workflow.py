@@ -12,7 +12,8 @@ import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
 
-CLIENT_SECRETS_FILE = "client_secret_718959481266-rgcep92fv592m6k5fcd1dedu3101f5mm.apps.googleusercontent.com.json"
+#CLIENT_SECRETS_FILE = "client_secret_718959481266-rgcep92fv592m6k5fcd1dedu3101f5mm.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = os.environ.get('CLIENT_SECRET')
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 API_SERVICE_NAME = 'calendar'
