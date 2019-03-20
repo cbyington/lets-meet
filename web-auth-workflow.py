@@ -136,4 +136,4 @@ if __name__ == '__main__':
   os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
   #app.run('localhost', 8080, debug=True)
-  app.run()
+  app.run(host='0.0.0.0',port=os.environ.get('PORT'))
